@@ -1,8 +1,14 @@
-- hosts: webserver
+- hosts: all
   become: true
   roles:
-    - docker
-#- hosts: webserver
-#  become: true
-#  roles:
-#    - docker
+    - kube-dependencies
+
+- hosts: master
+  become: true
+  roles:
+    - master
+
+- hosts: workers
+  become: true
+  roles:
+    - workers 
