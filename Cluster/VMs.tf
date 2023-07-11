@@ -1,5 +1,5 @@
 resource "azurerm_resource_group" "Kubernetes" {
-   name = "LAST-test-file"
+   name = "LAST-test"
    location = var.location
 }
 
