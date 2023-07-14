@@ -1,5 +1,5 @@
 resource "azurerm_resource_group" "Kubernetes" {
-   name = "LAST-test1"
+   name = "LAST-cluster-Centos"
    location = var.location
 }
 
@@ -19,12 +19,12 @@ resource "tls_private_key" "SSH" {
      azurerm_network_interface.test["${count.index}"].id
     ]
 
- source_image_reference  {
-      publisher = "Canonical"
-      offer     = "0001-com-ubuntu-server-jammy"
-      sku       = "22_04-lts-gen2"
-      version   = "latest"
-    }
+ source_image_reference {
+    publisher = "OpenLogic"
+    offer     = "CentOS"
+    sku       = "8_5"
+    version   = "latest"
+  }
 
     computer_name                   = "worker-${count.index}"
     admin_username                  = "momo"
@@ -61,12 +61,12 @@ resource "tls_private_key" "SSH" {
      azurerm_network_interface.test["${2}"].id
      ]
 
-  source_image_reference  {
-      publisher = "Canonical"
-      offer     = "0001-com-ubuntu-server-jammy"
-      sku       = "22_04-lts-gen2"
-      version   = "latest"
-    }
+  source_image_reference {
+    publisher = "OpenLogic"
+    offer     = "CentOS"
+    sku       = "8_5"
+    version   = "latest"
+  }
 
     computer_name                   = "manager"
     admin_username                  = "momo"

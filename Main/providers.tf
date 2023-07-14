@@ -14,7 +14,3 @@
  provider "azurerm" {
    features {}
  }
-
-module "ChildResources" {
-  source = "../Cluster"
-}

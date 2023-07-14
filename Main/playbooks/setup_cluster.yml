@@ -1,0 +1,152 @@
+- hosts: all
+  become: yes
+  tasks:
+    - name: fail if OS is not CentOS 8.5
+      fail:
+        msg: "OS should be CentOS 8.5, not {{ ansible_distribution }} {{ ansible_distribution_version }}"
+      when: ansible_distribution != 'CentOS' or ansible_distribution_major_version != '8'
+
+    - name: Add hostname and IP address to /etc/hosts file
+      lineinfile:
+        dest: /etc/hosts
+        line: "{{ ansible_default_ipv4.address }} {{ ansible_hostname }}"
+        state: present
+
+    - name: Disable firewalld service
+      systemd:
+        name: firewalld
+        state: stopped
+        enabled: no
+
+    - name: Disable SELinux enforcement
+      replace:
+        path: /etc/selinux/config
+        regexp: 'SELINUX=enforcing'
+        replace: 'SELINUX=disabled'
+
+    - name: Remove swap entry from /etc/fstab
+      lineinfile:
+        dest: /etc/fstab
+        state: absent
+        regexp: '^.*\sswap\s.*$'
+
+    - name: Configure modules for Containerd by adding them to /etc/modules-load.d/containerd.conf
+      copy:
+        content: |
+          overlay
+          br_netfilter
+        dest: /etc/modules-load.d/containerd.conf
+
+    - name: Configure sysctl parameters for Kubernetes by adding them to /etc/sysctl.d/99-kubernetes-cri.conf
+      copy:
+        content: |
+          net.ipv4.ip_forward = 1
+          net.bridge.bridge-nf-call-iptables = 1
+          net.bridge.bridge-nf-call-ip6tables = 1
+        dest: /etc/sysctl.d/99-kubernetes-cri.conf
+
+    - name: Stop firewalld service
+      systemd:
+        name: firewalld
+        state: stopped
+
+    - name: Set SELinux to Permissive mode
+      selinux:
+        policy: targeted
+        state: permissive
+
+    - name: Load kernel modules
+      modprobe:
+        name: "{{ item }}"
+      with_items:
+        - overlay
+        - br_netfilter
+
+    - name: Apply sysctl changes
+      command:
+        cmd: sysctl --system
+
+    - name: Install required packages
+      package:
+        name:
+          - iproute-tc
+          - chrony
+        state: present
+
+    - name: Install yum-utils for repository management
+      package:
+        name: yum-utils
+        state: present
+
+    - name: Add Docker repository
+      command:
+        cmd: yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+
+    - name: Update system packages
+      command:
+        cmd: yum update -y
+
+    - name: Install containerd.io
+      package:
+        name: containerd.io
+        state: present
+
+    - name: Create directory for containerd configuration
+      file:
+        path: /etc/containerd
+        state: directory
+
+    - name: add Containerd configuration
+      shell: /usr/bin/containerd config default > /etc/containerd/config.toml
+
+    - name: Enable systemd cgroup driver for containerd in the configuration file previously generated
+      replace:
+        path: /etc/containerd/config.toml
+        regexp: 'SystemdCgroup = false'
+        replace: 'SystemdCgroup = true'
+
+    - name: Restart and enable containerd service to avoid manual restart when rebooting
+      systemd:
+        name: containerd
+        state: restarted
+        enabled: yes
+        daemon_reload: yes
+
+    - name: Add Kubernetes repository to /etc/yum.repos.d/kubernetes.repo
+      copy:
+        content: |
+          [kubernetes]
+          name=Kubernetes
+          baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+          enabled=1
+          gpgcheck=1
+          repo_gpgcheck=1
+          gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+        dest: /etc/yum.repos.d/kubernetes.repo
+
+    - name: Update system packages to enrich your package list with the previously added Kubernetes repository
+      command:
+        cmd: yum update -y
+
+    - name: Install kubelet, kubeadm, and kubectl
+      package:
+        name:
+          - kubelet
+          - kubeadm
+          - kubectl
+        state: present
+
+    - name: Enable and start kubelet service
+      systemd:
+        name: kubelet
+        state: started
+        enabled: yes
+
+    - name: Install yum-plugin-versionlock for package version locking
+      package:
+        name: yum-plugin-versionlock
+        state: present
+
+    - name: Lock kubelet, kubeadm, and kubectl versions to prevent automatic updates and keep consistent version to avoid conflicts in the future
+      command:
+        cmd: yum versionlock kubelet kubeadm kubectl

@@ -1,14 +1,4 @@
-- hosts: all
-  become: true
-  roles:
-    - kube-dependencies
-
-- hosts: master
-  become: true
-  roles:
-    - master
-
-- hosts: workers
-  become: true
-  roles:
-    - workers 
+---
+- import_playbook: playbooks/setup_cluster.yml
+- import_playbook: playbooks/initialize_cluster.yml
+- import_playbook: playbooks/join_cluster.yml
