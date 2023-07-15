@@ -8,3 +8,8 @@
     - name: 2048 Deployment replicated
       command:
         cmd: kubectl expose deploy game --type=LoadBalancer --port 80 --target-port=80
+
+# Commands to deploy manually :
+# kubectl create deploy game --image=alexwhen/docker-2048
+# kubectl scale --replicas=2 deploy/game
+# kubectl expose deploy game --type=LoadBalancer --port 80 --target-port=80
