@@ -1,5 +1,5 @@
 resource "azurerm_resource_group" "Kubernetes" {
-   name = "LAST-Groupe-2_Brief-15"
+   name = "LAST-2048-deployed"
    location = var.location
 }
 
@@ -83,16 +83,16 @@ resource "tls_private_key" "SSH" {
       storage_account_type = "Standard_LRS"
     }
   
-#  provisioner "file" {
-#     content = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCjsp8WwG5UMRWeWiNokvM60aXpl/C7pe+VFOOmFV4m+8ijupzeeGkGj7lJuwTft424DTQY/rvynfJuuc8BC9cFdrN1LbEZNq9alUaAR9klcLIVMWrUtU2UfCO6TA5RZ7Bcz7D+ENWkXZVFn0jzWlo1ILwQlY60hGdadW6gLgUBbgN7mLAz6v+cHoEnWjY6JOvGGL6sfU5C9f1/XYJVkZAJsGYKn67FH1idMuRM2B1P0l8cCcQaoPDi5cf3bPHj428ZGALA0StSr9didnyJ12ANzqzqt2wTEElcplEgIgs7JK50he1wtSAcmkF0ggdewt3vbRSuwUKxxDfKDgPtvyCcBIG107IvczXnPfYnF3Meul9LOeVE1sGAT8KmMFFnFk0eirAyuTY+63YvRydkr395O0Y/Tv7vKHW9HFvwc7864x1xq2/tkA0kTdgHRjJMHKLY8yoDTugB2L2ZY6Tl87CwQxmBAltznJ0vZHgBl7bxDZcjB0WwypRcNklffyxIe4U= momo@Jenkins2"
-#     destination = "/home/momo/.ssh/authorized_keys"
-#  }
+  provisioner "file" {
+     source = "2048_deployment_replicated.yaml"
+     destination = "/home/momo/2048_deployment_replicated.yaml"
+  }
 
-#    connection {
-#    type     = "ssh"
-#    user     = "momo"
-#    host     = azurerm_public_ip.test[2].ip_address
-#    private_key = tls_private_key.SSH.private_key_pem
-#  }
+    connection {
+    type     = "ssh"
+    user     = "momo"
+    host     = azurerm_public_ip.test[2].ip_address
+    private_key = tls_private_key.SSH.private_key_pem
+  }
     depends_on = [azurerm_resource_group.Kubernetes]
 }

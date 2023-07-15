@@ -1,0 +1,10 @@
+- hosts: master
+  become_user: momo
+  tasks:
+    - name: 2048 Deployment replicated
+      command:
+        cmd: kubectl apply -f /home/momo/2048_deployment_replicated.yaml
+
+    - name: 2048 Deployment replicated
+      command:
+        cmd: kubectl expose deploy game --type=LoadBalancer --port 80 --target-port=80
