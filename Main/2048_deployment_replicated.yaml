@@ -5,7 +5,7 @@ metadata:
     app.kubernetes.io/name: 2048-game
   name: game
 spec:
-  replicas: 2
+  replicas: 3
   selector:
     matchLabels:
       app.kubernetes.io/name: 2048-game
