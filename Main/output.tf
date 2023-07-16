@@ -1,5 +1,5 @@
 output "Cle_publique" {
-  value     = module.ChildResources.pub
+  value     = module.ChildResources.pub   # appel des outputs enfants
   sensitive = true
 }
 
