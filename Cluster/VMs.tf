@@ -1,5 +1,5 @@
 resource "azurerm_resource_group" "Kubernetes" {
-   name = "LAST-2048"
+   name = "LAST-2048-d"
    location = var.location
 }
 
